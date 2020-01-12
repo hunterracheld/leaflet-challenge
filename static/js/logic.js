@@ -30,22 +30,24 @@ function createMap(earthquakeData) {
     collapsed: false
   }).addTo(map);
 
+  return map;
+
+}
+
+// Function to get colors for each circle
+function getColor(mag) {
+  if (mag >= 5) {
+    return 'red';
+  } else if (mag >= 4) {
+    return 'orange';
+  } else if (mag >= 3) {
+    return 'yellow';
+  } else {
+    return 'green';
+  }
 }
 
 function renderCircles(response) {
-
-  // Function to get colors for each circle
-  function getColor(mag) {
-    if (mag > 5) {
-      return 'red';
-    } else if (mag > 4) {
-      return 'orange';
-    } else if (mag > 3) {
-      return 'yellow';
-    } else {
-      return 'green';
-    }
-  }
 
   // Render a circle based on magnitude
   var earthquakes = response.features
@@ -58,7 +60,7 @@ function renderCircles(response) {
 
   for (var i = 0; i < earthquakes.length; i++) {
     var earthquake = earthquakes[i];
-    
+
 
     var circle = L.circle([earthquake.geometry.coordinates[1], earthquake.geometry.coordinates[0]], {
       radius: earthquake.properties.mag * 10000,
@@ -71,25 +73,35 @@ function renderCircles(response) {
     circles.push(circle);
   }
 
-  createMap(L.layerGroup(circles));
+  var map = createMap(L.layerGroup(circles));
+
+  createLegend(map);
+
 }
 
 // Perform API call
 d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", renderCircles)
 
-//   // Print response.features to console for sanity-check
-//   console.log(response.features);
+// Set up the legend
+function createLegend(map) {
+  var legend = new L.control({ position: 'bottomright' });
+  legend.onAdd = function () {
 
-//   // Once response is received, proceed with renderCircles function
-//   renderCircles(response.features);
-// });
+    var div = L.DomUtil.create('div', 'info legend');
+    labels = []
+    legendLabels = ['0-3', '3-4', '4-5', '5+'],
+      grades = [2, 3, 4, 5];
 
+      for (var i = 0; i < grades.length; i++) {
 
+        labels.push(
+            '<i class="label" style="background:' + getColor(grades[i]) + '"></i> ' + legendLabels[i]
+        );
 
-
-
-
-// Send earthquakes layer to the createMap function
-
-
+    }
+    div.innerHTML = labels.join('<br>');
+      return div;
+    };
+    legend.addTo(map);
+  }
 
