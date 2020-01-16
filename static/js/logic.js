@@ -8,14 +8,23 @@ function createMap(earthquakeData) {
     accessToken: API_KEY
   });
 
+  var satMap = L.tileLayer(MAPBOX_URL, {
+    attribution: ATTRIBUTION,
+    maxZoom: 18,
+    id: "mapbox.satellite",
+    accessToken: API_KEY
+  });
+
   // Create a baseMaps object to hold base layer
   var baseMaps = {
-    "Light Map": lightMap
+    "Grayscale": lightMap,
+    "Satellite": satMap
   };
 
   // Create an overlayMaps object for earthquakeData layer
   var overlayMaps = {
-    "Earthquake Data": earthquakeData
+    "Earthquakes": earthquakeData,
+    //"Fault Lines": faultData
   };
 
   // Create map
@@ -63,7 +72,7 @@ function renderCircles(response) {
 
 
     var circle = L.circle([earthquake.geometry.coordinates[1], earthquake.geometry.coordinates[0]], {
-      radius: earthquake.properties.mag * 10000,
+      radius: earthquake.properties.mag * 25000,
       color: "black",
       weight: 1,
       fillColor: getColor(earthquake.properties.mag),
@@ -81,6 +90,9 @@ function renderCircles(response) {
 
 // Perform API call
 d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", renderCircles)
+
+// Second API call
+d3.json("https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json", renderLines)
 
 // Set up the legend
 function createLegend(map) {
